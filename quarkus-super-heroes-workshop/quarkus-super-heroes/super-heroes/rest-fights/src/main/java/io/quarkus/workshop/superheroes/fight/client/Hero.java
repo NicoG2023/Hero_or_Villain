@@ -14,5 +14,9 @@ public class Hero {
     @NotNull
     public String picture;
     public String powers;
+    public static Object findRandom() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findRandom'");
+    }
 
 }

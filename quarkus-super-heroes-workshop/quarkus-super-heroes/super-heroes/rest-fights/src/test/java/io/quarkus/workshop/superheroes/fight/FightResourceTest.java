@@ -1,9 +1,20 @@
 package io.quarkus.workshop.superheroes.fight;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.workshop.superheroes.fight.client.DefaultTestHero;
+import io.quarkus.workshop.superheroes.fight.client.DefaultTestVillain;
 import io.quarkus.workshop.superheroes.fight.client.Hero;
 import io.quarkus.workshop.superheroes.fight.client.Villain;
 import io.restassured.common.mapper.TypeRef;
+import io.quarkus.workshop.superheroes.fight.Fight;
+import io.quarkus.workshop.superheroes.fight.Fighters;
+import io.quarkus.workshop.superheroes.fight.client.HeroProxy;
+import io.quarkus.test.InjectMock;
+import static org.mockito.Mockito.when;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.junit.jupiter.api.BeforeEach;
+
+
 import org.hamcrest.core.Is;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -38,6 +49,39 @@ public class FightResourceTest {
 
     private static final int NB_FIGHTS = 3;
     private static String fightId;
+
+    @InjectMock
+    @RestClient
+    HeroProxy heroProxy;
+
+    @BeforeEach
+    public void setup() {
+        when(heroProxy.findRandomHero()).thenReturn(DefaultTestHero.INSTANCE);
+    }
+
+    @Test
+    void shouldGetRandomFighters() {
+        Fighters fighters = given()
+            .when()
+            .get("/api/fights/randomfighters")
+            .then()
+            .statusCode(OK.getStatusCode())
+            .contentType(APPLICATION_JSON)
+            .extract()
+            .as(Fighters.class);
+
+        Hero hero = fighters.hero;
+        assertEquals(hero.name, DefaultTestHero.DEFAULT_HERO_NAME);
+        assertEquals(hero.picture, DefaultTestHero.DEFAULT_HERO_PICTURE);
+        assertEquals(hero.level, DefaultTestHero.DEFAULT_HERO_LEVEL);
+        assertEquals(hero.powers, DefaultTestHero.DEFAULT_HERO_POWERS);
+
+        Villain villain = fighters.villain;
+        assertEquals(villain.name, DefaultTestVillain.DEFAULT_VILLAIN_NAME);
+        assertEquals(villain.picture, DefaultTestVillain.DEFAULT_VILLAIN_PICTURE);
+        assertEquals(villain.level, DefaultTestVillain.DEFAULT_VILLAIN_LEVEL);
+        assertEquals(villain.powers, DefaultTestVillain.DEFAULT_VILLAIN_POWERS);
+    }
 
     @Test
     void shouldPingOpenAPI() {
