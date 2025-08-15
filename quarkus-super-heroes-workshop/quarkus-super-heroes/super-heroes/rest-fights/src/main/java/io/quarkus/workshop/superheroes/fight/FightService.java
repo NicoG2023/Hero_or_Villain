@@ -1,6 +1,8 @@
 package io.quarkus.workshop.superheroes.fight;
 
 import org.jboss.logging.Logger;
+import org.eclipse.microprofile.reactive.messaging.Channel;
+import org.eclipse.microprofile.reactive.messaging.Emitter;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -26,6 +28,7 @@ public class FightService {
     @Inject Logger logger;
     @RestClient HeroProxy heroProxy;
     @RestClient VillainProxy villainProxy;
+    @Channel("fights") Emitter<Fight> emitter;
 
     private final Random random = new Random();
 
@@ -75,6 +78,7 @@ public class FightService {
 
         fight.fightDate = Instant.now();
         fight.persist();
+        emitter.send(fight).toCompletableFuture().join();
 
         return fight;
     }
